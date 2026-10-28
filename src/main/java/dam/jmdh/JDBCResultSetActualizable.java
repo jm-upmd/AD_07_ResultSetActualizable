@@ -28,13 +28,13 @@ public class JDBCResultSetActualizable {
       boolean autoComm = c.getAutoCommit();  // para restaurarlo después
 
       try (
-              // Resultset.CONCUR_ UPDATABLE:el ResultSet es actualizable, es decir, los cambios
+              // Resultset.CONCUR_UPDATABLE:el ResultSet es actualizable, es decir, los cambios
               //realizados en él se pueden grabar en la base de datos.
            Statement sConsulta = c.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
            ResultSet rs = sConsulta.executeQuery("select * from clientes where cp is not null");
       ) {
 
-        c.setAutoCommit(false);
+        c.setAutoCommit(false); // Comenzamos una transacción
 
         // Modifica último cliente
         rs.last();
@@ -44,7 +44,7 @@ public class JDBCResultSetActualizable {
 
         // Borra penúltimo cliente
         rs.previous();
-        System.out.printf("Borrado cliente con DNI: %s.\n", rs.getString("dni"));
+        System.out.printf("Borrando cliente con DNI: %s.\n", rs.getString("dni"));
         rs.deleteRow();
 
         // Inserta nuevo cliente
@@ -62,7 +62,7 @@ public class JDBCResultSetActualizable {
         } else {
           System.out.printf("ERROR: %s\n", ex.getMessage());
         }
-
+        // Se hace rollback
         try {
           c.rollback();
           System.out.println("Se hace  ROLLBACK");
@@ -74,7 +74,7 @@ public class JDBCResultSetActualizable {
         c.setAutoCommit(autoComm);  // Restaurar modo autocommmit anterior
       }
     } catch (SQLException ex) {
-      System.out.printf("ERROR de conexión");
+      System.out.println("ERROR de conexión");
       muestraErrorSQL(ex);
     }
 
